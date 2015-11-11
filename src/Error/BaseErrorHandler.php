@@ -47,7 +47,7 @@ abstract class BaseErrorHandler
      * Subclasses should implement this method to display an uncaught exception as
      * desired for the runtime they operate in.
      *
-     * @param \Exception $exception The uncaught exception.
+     * @param \Exception|\Throwable $exception The uncaught exception.
      * @return void
      */
     abstract protected function _displayException($exception);
@@ -145,12 +145,12 @@ abstract class BaseErrorHandler
      * Uses a template method provided by subclasses to display errors in an
      * environment appropriate way.
      *
-     * @param \Exception $exception Exception instance.
+     * @param \Exception|\Throwable $exception Exception instance.
      * @return void
      * @throws \Exception When renderer class not found
      * @see http://php.net/manual/en/function.set-exception-handler.php
      */
-    public function handleException(Exception $exception)
+    public function handleException($exception)
     {
         $this->_displayException($exception);
         $this->_logException($exception);
@@ -225,10 +225,10 @@ abstract class BaseErrorHandler
     /**
      * Handles exception logging
      *
-     * @param \Exception $exception Exception instance.
+     * @param \Exception|\Throwable $exception Exception instance.
      * @return bool
      */
-    protected function _logException(Exception $exception)
+    protected function _logException($exception)
     {
         $config = $this->_options;
         if (empty($config['log'])) {
@@ -248,10 +248,10 @@ abstract class BaseErrorHandler
     /**
      * Generates a formatted error message
      *
-     * @param \Exception $exception Exception instance
+     * @param \Exception|\Throwable $exception Exception instance
      * @return string Formatted message
      */
-    protected function _getMessage(Exception $exception)
+    protected function _getMessage($exception)
     {
         $config = $this->_options;
         $message = sprintf(

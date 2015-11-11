@@ -29,6 +29,7 @@ use Cake\Utility\Inflector;
 use Cake\View\Exception\MissingTemplateException;
 use Exception;
 use PDOException;
+use Throwable;
 
 /**
  * Exception Renderer.
@@ -83,9 +84,9 @@ class ExceptionRenderer
      * If the error is a Cake\Core\Exception\Exception it will be converted to either a 400 or a 500
      * code error depending on the code used to construct the error.
      *
-     * @param Exception $exception Exception.
+     * @param Exception|\Throwable $exception Exception.
      */
-    public function __construct(Exception $exception)
+    public function __construct($exception)
     {
         $this->error = $exception;
         $this->controller = $this->_getController();
@@ -114,6 +115,8 @@ class ExceptionRenderer
             $startup = true;
         } catch (Exception $e) {
             $startup = false;
+        } catch (Throwable $e) {
+            $startup = false;
         }
 
         // Retry RequestHandler, as another aspect of startupProcess()
@@ -124,6 +127,7 @@ class ExceptionRenderer
                 $event = new Event('Controller.startup', $controller);
                 $controller->RequestHandler->startup($event);
             } catch (Exception $e) {
+            } catch (Throwable $e) {
             }
         }
         if (empty($controller)) {
@@ -184,7 +188,7 @@ class ExceptionRenderer
      * Render a custom error method/template.
      *
      * @param string $method The method name to invoke.
-     * @param Exception $exception The exception to render.
+     * @param \Exception|\Throwable $exception The exception to render.
      * @return \Cake\Network\Response The response to send.
      */
     protected function _customMethod($method, $exception)
@@ -200,10 +204,10 @@ class ExceptionRenderer
     /**
      * Get method name
      *
-     * @param Exception $exception Exception instance.
+     * @param \Exception|\Throwable $exception Exception instance.
      * @return string
      */
-    protected function _method(Exception $exception)
+    protected function _method($exception)
     {
         list(, $baseClass) = namespaceSplit(get_class($exception));
 
@@ -218,11 +222,11 @@ class ExceptionRenderer
     /**
      * Get error message.
      *
-     * @param Exception $exception Exception.
+     * @param \Exception|\Throwable $exception Exception.
      * @param int $code Error code.
      * @return string Error message
      */
-    protected function _message(Exception $exception, $code)
+    protected function _message($exception, $code)
     {
         $message = $this->error->getMessage();
 
@@ -242,12 +246,12 @@ class ExceptionRenderer
     /**
      * Get template for rendering exception info.
      *
-     * @param \Exception $exception Exception instance.
+     * @param \Exception|\Throwable $exception Exception instance.
      * @param string $method Method name.
      * @param int $code Error code.
      * @return string Template name
      */
-    protected function _template(Exception $exception, $method, $code)
+    protected function _template($exception, $method, $code)
     {
         $isHttpException = $exception instanceof HttpException;
 
@@ -279,10 +283,10 @@ class ExceptionRenderer
     /**
      * Get an error code value within range 400 to 506
      *
-     * @param \Exception $exception Exception.
+     * @param \Exception|\Throwable $exception Exception.
      * @return int Error code value within range 400 to 506
      */
-    protected function _code(Exception $exception)
+    protected function _code($exception)
     {
         $code = 500;
         $errorCode = $exception->getCode();
@@ -316,6 +320,8 @@ class ExceptionRenderer
             }
             return $this->_outputMessageSafe('error500');
         } catch (Exception $e) {
+            return $this->_outputMessageSafe('error500');
+        } catch (Throwable $e) {
             return $this->_outputMessageSafe('error500');
         }
     }
